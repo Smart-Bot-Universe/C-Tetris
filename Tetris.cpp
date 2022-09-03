@@ -15,11 +15,11 @@ class Tetris : public olc::PixelGameEngine
 			olc::Pixel coords[4][4];
 
 			int xOffset = 3, yOffset = 0;
-			olc::Pixel color = olc::WHITE;
+			olc::Pixel color;
 
 			Shape()
 			{
-				olc::Pixel color = olc::Pixel(rand() % 155 + 100, rand() % 155 + 100, rand() % 155 + 10);
+				color = olc::Pixel(rand() % 155 + 100, rand() % 155 + 100, rand() % 155 + 10);
 
 				// :)
 				switch (rand() % 7)
@@ -236,13 +236,19 @@ class Tetris : public olc::PixelGameEngine
 			// Current Piece controls
 			if (GetKey(olc::Key::A).bPressed && currentPiece->GetMinX() != 0)
 				currentPiece->MoveLeft();
-			else if (GetKey(olc::Key::D).bPressed && currentPiece->GetMaxX() != COL_LENGTH)
+			else if (GetKey(olc::Key::D).bPressed && currentPiece->GetMaxX() < (COL_LENGTH - 1))
 				currentPiece->MoveRight();
 
 			if (GetKey(olc::Key::LEFT).bPressed)
+			{
 				currentPiece->RotateLeft();
+				FixClipping(currentPiece);
+			}
 			else if (GetKey(olc::Key::RIGHT).bPressed)
+			{
 				currentPiece->RotateRight();
+				FixClipping(currentPiece);
+			}
 
 			// Checking if the piece fell down first so as to not create any weird bugs.
 			if (FinishedFalling(*currentPiece))
@@ -257,12 +263,12 @@ class Tetris : public olc::PixelGameEngine
 					currentPiece->Fall();
 
 				//Timer for natural piece falling
-				time_until_fall -= fElapsedTime;
-				if (time_until_fall < 0)
-				{
-					currentPiece->Fall();
-					time_until_fall = delay_until_fall;
-				}
+			//	time_until_fall -= fElapsedTime;
+			//	if (time_until_fall < 0)
+			//	{
+			//		currentPiece->Fall();
+			//		time_until_fall = delay_until_fall;
+			//	}
 			}
 
 			// Drawing the board
@@ -316,7 +322,7 @@ class Tetris : public olc::PixelGameEngine
 	
 		bool FinishedFalling(Shape piece)
 		{
-			return piece.GetMaxY() == ROW_LENGTH;
+			return piece.GetMaxY() >= ROW_LENGTH - 1;
 		}
 
 		void CementPiece(Shape *piece)
@@ -333,6 +339,11 @@ class Tetris : public olc::PixelGameEngine
 			delete piece;
 		}
 
+		/*
+			Checks each row if it's full.
+			And if a full row is found, it
+			clears that line.
+		*/
 		void checkForFullLines()
 		{
 			for (int row = 0; row < ROW_LENGTH; row++)
@@ -344,11 +355,21 @@ class Tetris : public olc::PixelGameEngine
 			}
 		}
 
+		/*
+			Checks the specified row index
+			if the whole row is filled with
+			stuff.
+		*/
 		bool isFullLine(byte row)
 		{
 
 		}
 
+		/*
+			Removes a full line specified by the row
+			index and rewards the player by increasing
+			the score.
+		*/
 		void removeLine(byte row)
 		{
 			for (int col = 0; col < COL_LENGTH; col++)
@@ -367,6 +388,13 @@ class Tetris : public olc::PixelGameEngine
 
 		}
 
+		/*
+			Clears the board to the background color
+			as the default value inside the array is 
+			probably not the background color
+
+			Also can be used when restarting the game
+		*/
 		void ClearBoard(int x, int y, int width, int height)
 		{
 			for (int row = y; row < y + height; row++)
@@ -376,6 +404,19 @@ class Tetris : public olc::PixelGameEngine
 					board[row][col] = BACKGROUND_COLOR;
 				}
 			}
+		}
+
+		
+		/*
+			Fixes the clipping of a piece of the piece
+			being outside of the board.
+		*/
+		void FixClipping(Shape *currentPiece)
+		{
+			while (currentPiece->GetMinX() < 0)
+				currentPiece->MoveRight();
+			while (currentPiece->GetMaxX() >= COL_LENGTH)
+				currentPiece->MoveLeft();
 		}
 };
 
