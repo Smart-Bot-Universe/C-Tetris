@@ -4,13 +4,20 @@
 /*
 	Problems:
 
-		1: The hold spacebar to far down is too quick and has no cooldown when a new piece appears.
+		1: The hold spacebar to far down is too quick and has no cooldown when a new piece appears. Moving left and right should be hold down key and cooldown for it too.
 		2: The piece can cement itself without actually falling, only needing something to be under it.
 		3: Infinite new pieces and Infinite amount of cementing occurs when your cemented blocks reach the spawn location.
 		4: Score is non-existant.
-		5: Unable to see if game is paused or not which can lead to people thinking a glitch occured where they can't play.
-		6: No Game over mechanic.
+		5: Unable to see if game is pa
+		7: Tetris pieces background is overlapping with board background (Simply change background to black and change olc::Black checks with BACKGROUND_COLOR)
 */
+
+const olc::Pixel BACKGROUND_COLOR = olc::BLACK;
+
+olc::Pixel board[20][10];
+const int ROW_LENGTH = 20;
+const int COL_LENGTH = 10;
+int score = 0;
 
 class Tetris : public olc::PixelGameEngine
 {
@@ -36,46 +43,46 @@ class Tetris : public olc::PixelGameEngine
 				switch (rand() % 7)
 				{
 				case 0:
-					coords[0][0] = olc::BLACK; coords[0][1] = olc::BLACK; coords[0][2] = olc::BLACK; coords[0][3] = olc::BLACK;
-					coords[1][0] = olc::BLACK; coords[1][1] = color;      coords[1][2] = color;      coords[1][3] = olc::BLACK;
-					coords[2][0] = olc::BLACK; coords[2][1] = color;      coords[2][2] = color;      coords[2][3] = olc::BLACK;
-					coords[3][0] = olc::BLACK; coords[3][1] = olc::BLACK; coords[3][2] = olc::BLACK; coords[3][3] = olc::BLACK;
+					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
+					coords[1][0] = BACKGROUND_COLOR; coords[1][1] = color;            coords[1][2] = color;            coords[1][3] = BACKGROUND_COLOR;
+					coords[2][0] = BACKGROUND_COLOR; coords[2][1] = color;            coords[2][2] = color;            coords[2][3] = BACKGROUND_COLOR;
+					coords[3][0] = BACKGROUND_COLOR; coords[3][1] = BACKGROUND_COLOR; coords[3][2] = BACKGROUND_COLOR; coords[3][3] = BACKGROUND_COLOR;
 					break;
 				case 1:
-					coords[0][0] = olc::BLACK; coords[0][1] = olc::BLACK; coords[0][2] = olc::BLACK; coords[0][3] = olc::BLACK;
-					coords[1][0] = color;      coords[1][1] = color;      coords[1][2] = olc::BLACK; coords[1][3] = olc::BLACK;
-					coords[2][0] = olc::BLACK; coords[2][1] = color;      coords[2][2] = color;      coords[2][3] = olc::BLACK;
-					coords[3][0] = olc::BLACK; coords[3][1] = olc::BLACK; coords[3][2] = olc::BLACK; coords[3][3] = olc::BLACK;
+					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
+					coords[1][0] = color;            coords[1][1] = color;            coords[1][2] = BACKGROUND_COLOR; coords[1][3] = BACKGROUND_COLOR;
+					coords[2][0] = BACKGROUND_COLOR; coords[2][1] = color;            coords[2][2] = color;            coords[2][3] = BACKGROUND_COLOR;
+					coords[3][0] = BACKGROUND_COLOR; coords[3][1] = BACKGROUND_COLOR; coords[3][2] = BACKGROUND_COLOR; coords[3][3] = BACKGROUND_COLOR;
 					break;
 				case 2:
-					coords[0][0] = olc::BLACK; coords[0][1] = olc::BLACK; coords[0][2] = olc::BLACK; coords[0][3] = olc::BLACK;
-					coords[1][0] = olc::BLACK; coords[1][1] = color;      coords[1][2] = color;      coords[1][3] = olc::BLACK;
-					coords[2][0] = color;      coords[2][1] = color;      coords[2][2] = olc::BLACK; coords[2][3] = olc::BLACK;
-					coords[3][0] = olc::BLACK; coords[3][1] = olc::BLACK; coords[3][2] = olc::BLACK; coords[3][3] = olc::BLACK;
+					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
+					coords[1][0] = BACKGROUND_COLOR; coords[1][1] = color;            coords[1][2] = color;            coords[1][3] = BACKGROUND_COLOR;
+					coords[2][0] = color;            coords[2][1] = color;            coords[2][2] = BACKGROUND_COLOR; coords[2][3] = BACKGROUND_COLOR;
+					coords[3][0] = BACKGROUND_COLOR; coords[3][1] = BACKGROUND_COLOR; coords[3][2] = BACKGROUND_COLOR; coords[3][3] = BACKGROUND_COLOR;
 					break;
 				case 3:
-					coords[0][0] = olc::BLACK; coords[0][1] = olc::BLACK; coords[0][2] = olc::BLACK; coords[0][3] = olc::BLACK;
-					coords[1][0] = color;      coords[1][1] = color;      coords[1][2] = color;      coords[1][3] = olc::BLACK;
-					coords[2][0] = olc::BLACK; coords[2][1] = olc::BLACK; coords[2][2] = color;      coords[2][3] = olc::BLACK;
-					coords[3][0] = olc::BLACK; coords[3][1] = olc::BLACK; coords[3][2] = olc::BLACK; coords[3][3] = olc::BLACK;
+					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
+					coords[1][0] = color;            coords[1][1] = color;            coords[1][2] = color;            coords[1][3] = BACKGROUND_COLOR;
+					coords[2][0] = BACKGROUND_COLOR; coords[2][1] = BACKGROUND_COLOR; coords[2][2] = color;            coords[2][3] = BACKGROUND_COLOR;
+					coords[3][0] = BACKGROUND_COLOR; coords[3][1] = BACKGROUND_COLOR; coords[3][2] = BACKGROUND_COLOR; coords[3][3] = BACKGROUND_COLOR;
 					break;
 				case 4:
-					coords[0][0] = olc::BLACK; coords[0][1] = olc::BLACK; coords[0][2] = olc::BLACK; coords[0][3] = olc::BLACK;
-					coords[1][0] = color;      coords[1][1] = color;      coords[1][2] = color;      coords[1][3] = olc::BLACK;
-					coords[2][0] = color;      coords[2][1] = olc::BLACK; coords[2][2] = olc::BLACK; coords[2][3] = olc::BLACK;
-					coords[3][0] = olc::BLACK; coords[3][1] = olc::BLACK; coords[3][2] = olc::BLACK; coords[3][3] = olc::BLACK;
+					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
+					coords[1][0] = color;            coords[1][1] = color;            coords[1][2] = color;            coords[1][3] = BACKGROUND_COLOR;
+					coords[2][0] = color;            coords[2][1] = BACKGROUND_COLOR; coords[2][2] = BACKGROUND_COLOR; coords[2][3] = BACKGROUND_COLOR;
+					coords[3][0] = BACKGROUND_COLOR; coords[3][1] = BACKGROUND_COLOR; coords[3][2] = BACKGROUND_COLOR; coords[3][3] = BACKGROUND_COLOR;
 					break;
 				case 5:
-					coords[0][0] = olc::BLACK; coords[0][1] = olc::BLACK; coords[0][2] = olc::BLACK; coords[0][3] = olc::BLACK;
-					coords[1][0] = color;      coords[1][1] = color;      coords[1][2] = color;      coords[1][3] = olc::BLACK;
-					coords[2][0] = olc::BLACK; coords[2][1] = color;      coords[2][2] = olc::BLACK; coords[2][3] = olc::BLACK;
-					coords[3][0] = olc::BLACK; coords[3][1] = olc::BLACK; coords[3][2] = olc::BLACK; coords[3][3] = olc::BLACK;
+					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
+					coords[1][0] = color;            coords[1][1] = color;            coords[1][2] = color;            coords[1][3] = BACKGROUND_COLOR;
+					coords[2][0] = BACKGROUND_COLOR; coords[2][1] = color;            coords[2][2] = BACKGROUND_COLOR; coords[2][3] = BACKGROUND_COLOR;
+					coords[3][0] = BACKGROUND_COLOR; coords[3][1] = BACKGROUND_COLOR; coords[3][2] = BACKGROUND_COLOR; coords[3][3] = BACKGROUND_COLOR;
 					break;
 				case 6:
-					coords[0][0] = olc::BLACK; coords[0][1] = olc::BLACK; coords[0][2] = olc::BLACK; coords[0][3] = olc::BLACK;
-					coords[1][0] = color;      coords[1][1] = color;      coords[1][2] = color;      coords[1][3] = color;
-					coords[2][0] = olc::BLACK; coords[2][1] = olc::BLACK; coords[2][2] = olc::BLACK; coords[2][3] = olc::BLACK;
-					coords[3][0] = olc::BLACK; coords[3][1] = olc::BLACK; coords[3][2] = olc::BLACK; coords[3][3] = olc::BLACK;
+					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
+					coords[1][0] = color;            coords[1][1] = color;            coords[1][2] = color;            coords[1][3] = color;
+					coords[2][0] = BACKGROUND_COLOR; coords[2][1] = BACKGROUND_COLOR; coords[2][2] = BACKGROUND_COLOR; coords[2][3] = BACKGROUND_COLOR;
+					coords[3][0] = BACKGROUND_COLOR; coords[3][1] = BACKGROUND_COLOR; coords[3][2] = BACKGROUND_COLOR; coords[3][3] = BACKGROUND_COLOR;
 					break;
 				}
 			}
@@ -207,14 +214,8 @@ class Tetris : public olc::PixelGameEngine
 	};
 
 	public:
-		olc::Pixel board[20][10];
-		const int ROW_LENGTH = 20;
-		const int COL_LENGTH = 10;
-		const olc::Pixel BACKGROUND_COLOR = olc::BLUE;
-
-		Shape *currentPiece;
 		GameStatus currentStatus = GameStatus::RUNNING;
-		int score = 0;
+		Shape *currentPiece;
 
 		float delay_until_fall = 0.4f;
 		float time_until_fall;
@@ -320,10 +321,13 @@ class Tetris : public olc::PixelGameEngine
 				for (int col = 0; col < currentPiece->WIDTH; col++)
 				{
 					olc::Pixel pieceColor = currentPiece->coords[row][col];
-				//	if (pieceColor != olc::BLACK)
+					if (pieceColor != BACKGROUND_COLOR)
 						FillRect((currentPiece->xOffset + col) * 20, (currentPiece->yOffset + row) * 20, 20, 20, pieceColor);
 				}
 			}
+			// Drawing the score last so that 
+			// it will be on top of everything else.
+			DrawString(5, 5, std::to_string(score));
 		}
 
 		inline void GamePaused()
@@ -348,7 +352,7 @@ class Tetris : public olc::PixelGameEngine
 			{
 				for (int row = piece.HEIGHT - 1; row >= 0; row--)
 				{
-					if (piece.coords[row][col] != olc::BLACK)
+					if (piece.coords[row][col] != BACKGROUND_COLOR)
 					{
 						if (board[piece.yOffset + row + 1][piece.xOffset + col] != BACKGROUND_COLOR)
 							return true;
@@ -367,7 +371,7 @@ class Tetris : public olc::PixelGameEngine
 				for (int col = 0; col < piece->WIDTH; col++)
 				{
 					olc::Pixel pieceColor = piece->coords[row][col];
-					if (pieceColor != olc::BLACK)
+					if (pieceColor != BACKGROUND_COLOR)
 						board[piece->yOffset + row][piece->xOffset + col] = pieceColor;
 				}
 			}
@@ -420,6 +424,7 @@ class Tetris : public olc::PixelGameEngine
 			// because it will be removed by the gravity
 			// hehehaha
 			ApplyGravity(row);
+			score += 500;
 		}
 
 		bool IsGameOver()
