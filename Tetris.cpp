@@ -1,6 +1,17 @@
 #define OLC_PGE_APPLICATION
 #include "../vendor/olcPixelGameEngine/olcPixelGameEngine.h"
 
+/*
+	Problems:
+
+		1: The hold spacebar to far down is too quick and has no cooldown when a new piece appears.
+		2: The piece can cement itself without actually falling, only needing something to be under it.
+		3: Infinite new pieces and Infinite amount of cementing occurs when your cemented blocks reach the spawn location.
+		4: Score is non-existant.
+		5: Unable to see if game is paused or not which can lead to people thinking a glitch occured where they can't play.
+		6: No Game over mechanic.
+*/
+
 class Tetris : public olc::PixelGameEngine
 {
 	enum GameStatus
@@ -229,6 +240,21 @@ class Tetris : public olc::PixelGameEngine
 			return true;
 		}
 
+		GameStatus GetGameStatus()
+		{
+		//	if (currentStatus == GameStatus::OVER)
+		//		return currentStatus;
+
+			if (GetKey(olc::Key::P).bPressed)
+			{
+				if (currentStatus == GameStatus::PAUSED)
+					currentStatus = GameStatus::RUNNING;
+				else
+					currentStatus = GameStatus::PAUSED;
+			}
+			return currentStatus;
+		}
+
 		inline void GameRunning(float fElapsedTime)
 		{
 			// Current Piece controls
@@ -247,6 +273,10 @@ class Tetris : public olc::PixelGameEngine
 				currentPiece->RotateRight();
 				FixClipping(currentPiece);
 			}
+
+			// Restructure this to only check if it's
+			// finished falling after falling.
+			// Hmmm something about this leaves a sour taste in my mouth
 
 			// Checking if the piece fell down first so as to not create any weird bugs.
 			if (FinishedFalling(*currentPiece))
@@ -306,18 +336,6 @@ class Tetris : public olc::PixelGameEngine
 
 		}
 
-		GameStatus GetGameStatus()
-		{
-			if (GetKey(olc::Key::P).bPressed)
-			{
-				if (currentStatus == GameStatus::PAUSED)
-					currentStatus = GameStatus::RUNNING;
-				else
-					currentStatus = GameStatus::PAUSED;
-			}
-			return currentStatus;
-		}
-
 		void NewPiece()
 		{
 			currentPiece = new Shape();
@@ -326,7 +344,20 @@ class Tetris : public olc::PixelGameEngine
 	
 		bool FinishedFalling(Shape piece)
 		{
-			return piece.GetMaxY() >= ROW_LENGTH - 1;
+			for (int col = 0;col < piece.WIDTH; col++)
+			{
+				for (int row = piece.HEIGHT - 1; row >= 0; row--)
+				{
+					if (piece.coords[row][col] != olc::BLACK)
+					{
+						if (board[piece.yOffset + row + 1][piece.xOffset + col] != BACKGROUND_COLOR)
+							return true;
+						break;
+					}
+				}
+			}
+			return false;
+		//	return piece.GetMaxY() >= ROW_LENGTH - 1;
 		}
 
 		void CementPiece(Shape *piece)
