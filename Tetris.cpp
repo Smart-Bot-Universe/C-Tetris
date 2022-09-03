@@ -7,9 +7,6 @@
 		1: The hold spacebar to far down is too quick and has no cooldown when a new piece appears. Moving left and right should be hold down key and cooldown for it too.
 		2: The piece can cement itself without actually falling, only needing something to be under it.
 		3: Infinite new pieces and Infinite amount of cementing occurs when your cemented blocks reach the spawn location.
-		4: Score is non-existant.
-		5: Unable to see if game is pa
-		7: Tetris pieces background is overlapping with board background (Simply change background to black and change olc::Black checks with BACKGROUND_COLOR)
 */
 
 const olc::Pixel BACKGROUND_COLOR = olc::BLACK;
@@ -332,7 +329,10 @@ class Tetris : public olc::PixelGameEngine
 
 		inline void GamePaused()
 		{
-
+			// Pain. Don't know how to figure out font width and height
+			// to just calculate the center of this text and center
+			// it on the screen.
+			DrawString(32, 180, "\t PAUSED\nPress p to unpause");
 		}
 
 		inline void GameOver()
