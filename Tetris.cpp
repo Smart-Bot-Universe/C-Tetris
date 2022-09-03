@@ -142,7 +142,6 @@ class Tetris : public olc::PixelGameEngine
 				yOffset++;
 			}
 			
-			// Some if not of these coord methods are buggy. Should def be double checked.
 			int GetMinX()
 			{
 				for (int col = 0; col < WIDTH; col++)
@@ -182,7 +181,6 @@ class Tetris : public olc::PixelGameEngine
 				return yOffset;
 			}
 
-			// Prob buggy
 			int GetMaxY()
 			{
 				for (int row = HEIGHT-1; row >= 0; row--)
@@ -254,6 +252,12 @@ class Tetris : public olc::PixelGameEngine
 			if (FinishedFalling(*currentPiece))
 			{
 				CementPiece(currentPiece);
+
+				// Only time this should be checked.
+				CheckForFullLines();
+
+				// The old piece is long gone
+				// from the players control.
 				NewPiece();
 			}
 			else
@@ -344,13 +348,13 @@ class Tetris : public olc::PixelGameEngine
 			And if a full row is found, it
 			clears that line.
 		*/
-		void checkForFullLines()
+		void CheckForFullLines()
 		{
 			for (int row = 0; row < ROW_LENGTH; row++)
 			{
-				if (isFullLine(row))
+				if (IsFullLine(row))
 				{
-
+					RemoveLine(row);
 				}
 			}
 		}
@@ -360,9 +364,14 @@ class Tetris : public olc::PixelGameEngine
 			if the whole row is filled with
 			stuff.
 		*/
-		bool isFullLine(byte row)
+		bool IsFullLine(byte row)
 		{
-
+			for (int col = 0; col < COL_LENGTH; col++)
+			{
+				if (board[row][col] == BACKGROUND_COLOR)
+					return false;
+			}
+			return true;
 		}
 
 		/*
@@ -370,22 +379,40 @@ class Tetris : public olc::PixelGameEngine
 			index and rewards the player by increasing
 			the score.
 		*/
-		void removeLine(byte row)
+		inline void RemoveLine(byte row)
 		{
-			for (int col = 0; col < COL_LENGTH; col++)
+		//	for (int col = 0; col < COL_LENGTH; col++)
+		//	{
+		//		board[row][col] = BACKGROUND_COLOR;
+		//	}
+			// We don't need to actually remove the row
+			// because it will be removed by the gravity
+			// hehehaha
+			ApplyGravity(row);
+		}
+
+		bool IsGameOver()
+		{
+
+		}
+
+		/*
+			Called right after a single
+			line is removed
+
+			the value row being the row
+			index of where the line
+			was removed.
+		*/
+		inline void ApplyGravity(byte row)
+		{
+			for (int y = row; y > 0; y--)
 			{
-				
+				for (int col = 0; col < COL_LENGTH; col++)
+				{
+					board[y][col] = board[y - 1][col];
+				}
 			}
-		}
-
-		bool isGameOver()
-		{
-
-		}
-
-		void gravity()
-		{
-
 		}
 
 		/*
