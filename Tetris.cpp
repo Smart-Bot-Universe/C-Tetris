@@ -4,9 +4,11 @@
 /*
 	Problems:
 
-		1: The hold spacebar to far down is too quick and has no cooldown when a new piece appears. Moving left and right should be hold down key and cooldown for it too.
-		2: The piece can cement itself without actually falling, only needing something to be under it.
-		3: Infinite new pieces and Infinite amount of cementing occurs when your cemented blocks reach the spawn location.
+		1: The piece can cement itself without actually falling, only needing something to be under it.
+		2: Infinite new pieces and Infinite amount of cementing occurs when your cemented blocks reach the spawn location.
+		3: The pieces can clip into other pieces by moving right or left until the piece has something below it.
+		3-fix: Instead of checking if it would move off-screen, check if it will move into something other than the BACKGROUND_COLOR
+				Similiar to the checking of if there's something below the piece to see if it finished falling but horizontially.
 */
 
 const olc::Pixel BACKGROUND_COLOR = olc::BLACK;
@@ -215,7 +217,13 @@ class Tetris : public olc::PixelGameEngine
 		Shape *currentPiece;
 
 		float delay_until_fall = 0.4f;
-		float time_until_fall;
+		float timer_until_fall;
+
+		float move_cd = 0.05f;
+		float timer_move_left = move_cd;
+
+		float fall_cd = 0.02f;
+		float timer_fall_left = fall_cd;
 
 		bool OnUserCreate() override
 		{
@@ -255,11 +263,20 @@ class Tetris : public olc::PixelGameEngine
 
 		inline void GameRunning(float fElapsedTime)
 		{
+			timer_move_left -= fElapsedTime;
+			timer_fall_left -= fElapsedTime;
+
 			// Current Piece controls
-			if (GetKey(olc::Key::A).bPressed && currentPiece->GetMinX() != 0)
+			if (GetKey(olc::Key::A).bHeld && currentPiece->GetMinX() != 0 && timer_move_left < 0)
+			{
 				currentPiece->MoveLeft();
-			else if (GetKey(olc::Key::D).bPressed && currentPiece->GetMaxX() < (COL_LENGTH - 1))
+				timer_move_left = move_cd;
+			}
+			else if (GetKey(olc::Key::D).bHeld && currentPiece->GetMaxX() < (COL_LENGTH - 1) && timer_move_left < 0)
+			{
 				currentPiece->MoveRight();
+				timer_move_left = move_cd;
+			}
 
 			if (GetKey(olc::Key::LEFT).bPressed)
 			{
@@ -272,35 +289,28 @@ class Tetris : public olc::PixelGameEngine
 				FixClipping(currentPiece);
 			}
 
-			// Restructure this to only check if it's
-			// finished falling after falling.
-			// Hmmm something about this leaves a sour taste in my mouth
+			if (GetKey(olc::Key::SPACE).bHeld && timer_fall_left < 0)
+			{
+				currentPiece->Fall();
+				timer_fall_left = fall_cd;
+			}
 
-			// Checking if the piece fell down first so as to not create any weird bugs.
+			//Timer for natural piece falling
+			timer_until_fall -= fElapsedTime;
+			if (timer_until_fall < 0)
+			{
+				currentPiece->Fall();
+				timer_until_fall = delay_until_fall;
+			}
+
 			if (FinishedFalling(*currentPiece))
 			{
 				CementPiece(currentPiece);
-
 				// Only time this should be checked.
 				CheckForFullLines();
-
 				// The old piece is long gone
 				// from the players control.
 				NewPiece();
-			}
-			else
-			{
-				// Current Piece control to fall down 
-				if (GetKey(olc::Key::SPACE).bHeld)
-					currentPiece->Fall();
-
-				//Timer for natural piece falling
-			//	time_until_fall -= fElapsedTime;
-			//	if (time_until_fall < 0)
-			//	{
-			//		currentPiece->Fall();
-			//		time_until_fall = delay_until_fall;
-			//	}
 			}
 
 			// Drawing the board
@@ -343,7 +353,7 @@ class Tetris : public olc::PixelGameEngine
 		void NewPiece()
 		{
 			currentPiece = new Shape();
-			time_until_fall = delay_until_fall;
+			timer_until_fall = delay_until_fall;
 		}
 	
 		bool FinishedFalling(Shape piece)
