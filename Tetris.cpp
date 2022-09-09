@@ -9,9 +9,15 @@
 		3: The pieces can clip into other pieces by moving right or left until the piece has something below it.
 		3-fix: Instead of checking if it would move off-screen, check if it will move into something other than the BACKGROUND_COLOR
 				Similiar to the checking of if there's something below the piece to see if it finished falling but horizontially.
+
+		4: Restructure cementing the pieces to not just cement where they are.
+			They'll be cemented at the same x coordinate. But the y coordinate
+			may change.
+
+		5: Need more random pieces as currently the same seed is used for rand().
 */
 
-const olc::Pixel BACKGROUND_COLOR = olc::BLACK;
+const olc::Pixel BACKGROUND_COLOR = olc::BLUE;
 
 olc::Pixel board[20][10];
 const int ROW_LENGTH = 20;
@@ -39,7 +45,8 @@ class Tetris : public olc::PixelGameEngine
 				color = olc::Pixel(rand() % 155 + 100, rand() % 155 + 100, rand() % 155 + 10);
 
 				// :)
-				switch (rand() % 7)
+				int value = rand() % 7;
+				switch (value)
 				{
 				case 0:
 					coords[0][0] = BACKGROUND_COLOR; coords[0][1] = BACKGROUND_COLOR; coords[0][2] = BACKGROUND_COLOR; coords[0][3] = BACKGROUND_COLOR;
@@ -216,10 +223,10 @@ class Tetris : public olc::PixelGameEngine
 		GameStatus currentStatus = GameStatus::RUNNING;
 		Shape *currentPiece;
 
-		float delay_until_fall = 0.4f;
+		float delay_until_fall = 1.5f;
 		float timer_until_fall;
 
-		float move_cd = 0.05f;
+		float move_cd = 0.07f;
 		float timer_move_left = move_cd;
 
 		float fall_cd = 0.02f;
@@ -267,12 +274,12 @@ class Tetris : public olc::PixelGameEngine
 			timer_fall_left -= fElapsedTime;
 
 			// Current Piece controls
-			if (GetKey(olc::Key::A).bHeld && currentPiece->GetMinX() != 0 && timer_move_left < 0)
+			if (timer_move_left < 0 && GetKey(olc::Key::A).bHeld && CanMoveHorizontallyLeft(currentPiece))
 			{
 				currentPiece->MoveLeft();
 				timer_move_left = move_cd;
 			}
-			else if (GetKey(olc::Key::D).bHeld && currentPiece->GetMaxX() < (COL_LENGTH - 1) && timer_move_left < 0)
+			else if (timer_move_left < 0 && GetKey(olc::Key::D).bHeld && CanMoveHorizontallyRight(currentPiece))
 			{
 				currentPiece->MoveRight();
 				timer_move_left = move_cd;
@@ -490,6 +497,60 @@ class Tetris : public olc::PixelGameEngine
 				currentPiece->MoveRight();
 			while (currentPiece->GetMaxX() >= COL_LENGTH)
 				currentPiece->MoveLeft();
+		}
+
+		/*
+			Checks if you can move left without colliding
+			with the border or colliding with another
+			tetris piece.
+		*/
+		bool CanMoveHorizontallyLeft(Shape *currentPiece)
+		{
+			if (currentPiece->GetMinX() == 0)
+				return false;
+
+			for (int row = 0; row < currentPiece->HEIGHT; row++)
+			{
+				for (int col = 0; col < currentPiece->WIDTH; col++)
+				{
+					if (currentPiece->coords[row][col] != BACKGROUND_COLOR)
+					{
+						if (board[row + currentPiece->yOffset][col + currentPiece->xOffset - 1] != BACKGROUND_COLOR)
+						{
+							return false;
+						}
+						break;
+					}
+				}
+			}
+			return true;
+		}
+
+		/*
+			Checks if you can move right without colliding
+			with the border or colliding with another
+			tetris piece.
+		*/
+		bool CanMoveHorizontallyRight(Shape * currentPiece)
+		{
+			if (currentPiece->GetMaxX() == (COL_LENGTH - 1))
+				return false;
+
+			for (int row = 0; row < currentPiece->HEIGHT; row++)
+			{
+				for (int col = currentPiece->WIDTH - 1; col >= 0; col--)
+				{
+					if (currentPiece->coords[row][col] != BACKGROUND_COLOR)
+					{
+						if (board[row + currentPiece->yOffset][col + currentPiece->xOffset + 1] != BACKGROUND_COLOR)
+						{
+							return false;
+						}
+						break;
+					}
+				}
+			}
+			return true;
 		}
 };
 
