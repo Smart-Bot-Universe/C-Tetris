@@ -1,6 +1,8 @@
 #define OLC_PGE_APPLICATION
 #include "../vendor/olcPixelGameEngine/olcPixelGameEngine.h"
 
+#include <exception>
+
 /*
 	Problems:
 
@@ -223,13 +225,13 @@ class Tetris : public olc::PixelGameEngine
 		GameStatus currentStatus = GameStatus::RUNNING;
 		Shape *currentPiece;
 
-		float delay_until_fall = 1.5f;
+		float delay_until_fall = 10001.5f;
 		float timer_until_fall;
 
 		float move_cd = 0.07f;
 		float timer_move_left = move_cd;
 
-		float fall_cd = 0.02f;
+		float fall_cd = 0.32f;
 		float timer_fall_left = fall_cd;
 
 		bool OnUserCreate() override
@@ -354,7 +356,7 @@ class Tetris : public olc::PixelGameEngine
 
 		inline void GameOver()
 		{
-
+			DrawString(32, 180, "GAME OVER");
 		}
 
 		void NewPiece()
@@ -381,18 +383,52 @@ class Tetris : public olc::PixelGameEngine
 		//	return piece.GetMaxY() >= ROW_LENGTH - 1;
 		}
 
-		void CementPiece(Shape *piece)
+		void CementPiece(Shape *currentPiece)
 		{
-			for (int row = 0; row < piece->HEIGHT; row++)
+			int xOffset = currentPiece->xOffset;
+			int yOffset = currentPiece->yOffset;
+
+			int minX = currentPiece->GetMinX();
+			int maxX = currentPiece->GetMaxX();
+			int maxY = currentPiece->GetMaxY();
+			
+			// Checks the bottom row of the tetris piece
+			// of if it's overlapping anything in the board
+			// other than the background color.
+			LOOP:if (maxY <= 0)
 			{
-				for (int col = 0; col < piece->WIDTH; col++)
+				currentStatus = GameStatus::OVER;
+				// No need to cement the piece because
+				// well it won't cement it either way.
+				// Just saving the trouble of a possibility.
+				return;
+			}
+			else
+			{
+				for (int x = minX; x < maxX; x++)
 				{
-					olc::Pixel pieceColor = piece->coords[row][col];
-					if (pieceColor != BACKGROUND_COLOR)
-						board[piece->yOffset + row][piece->xOffset + col] = pieceColor;
+					// If it overlaps something, restart with
+					// the whole piece higher by one row.
+					if (board[maxY][x] != BACKGROUND_COLOR && currentPiece->coords[maxY - yOffset][x - xOffset] != BACKGROUND_COLOR)
+					{
+						yOffset--;
+						maxY--;
+						goto LOOP;
+					}
 				}
 			}
-			delete piece;
+
+			// Cements the piece into the board
+			for (int y = 0; y < currentPiece->HEIGHT; y++)
+			{
+				for (int x = (minX - xOffset); x <= (maxX - xOffset); x++)
+				{
+					olc::Pixel pieceColor = currentPiece->coords[y][x];
+					if (pieceColor != BACKGROUND_COLOR)
+						board[y + yOffset][x + xOffset] = pieceColor;
+				}
+			}
+			delete currentPiece;
 		}
 
 		/*
