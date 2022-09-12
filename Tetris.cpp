@@ -5,18 +5,7 @@
 
 /*
 	Problems:
-
-		1: The piece can cement itself without actually falling, only needing something to be under it.
-		2: Infinite new pieces and Infinite amount of cementing occurs when your cemented blocks reach the spawn location.
-		3: The pieces can clip into other pieces by moving right or left until the piece has something below it.
-		3-fix: Instead of checking if it would move off-screen, check if it will move into something other than the BACKGROUND_COLOR
-				Similiar to the checking of if there's something below the piece to see if it finished falling but horizontially.
-
-		4: Restructure cementing the pieces to not just cement where they are.
-			They'll be cemented at the same x coordinate. But the y coordinate
-			may change.
-
-		5: Need more random pieces as currently the same seed is used for rand().
+		1: Need more random pieces as currently the same seed is used for rand().
 */
 
 const olc::Pixel BACKGROUND_COLOR = olc::BLUE;
@@ -225,19 +214,23 @@ class Tetris : public olc::PixelGameEngine
 		GameStatus currentStatus = GameStatus::RUNNING;
 		Shape *currentPiece;
 
-		float delay_until_fall = 10001.5f;
+		float delay_until_fall = 1.5f;
 		float timer_until_fall;
 
 		float move_cd = 0.07f;
-		float timer_move_left = move_cd;
+		float timer_move_left;
 
-		float fall_cd = 0.32f;
-		float timer_fall_left = fall_cd;
+		float fall_cd = 0.02f;
+		float timer_fall_left;
 
 		bool OnUserCreate() override
 		{
+			currentStatus = GameStatus::RUNNING;
+			timer_move_left = move_cd;
+			timer_fall_left = fall_cd;
+
 			NewPiece();
-			ClearBoard(0, 0, COL_LENGTH, ROW_LENGTH);
+			ClearBoard();
 			return true;
 		}
 
@@ -257,9 +250,6 @@ class Tetris : public olc::PixelGameEngine
 
 		GameStatus GetGameStatus()
 		{
-		//	if (currentStatus == GameStatus::OVER)
-		//		return currentStatus;
-
 			if (GetKey(olc::Key::P).bPressed)
 			{
 				if (currentStatus == GameStatus::PAUSED)
@@ -356,7 +346,12 @@ class Tetris : public olc::PixelGameEngine
 
 		inline void GameOver()
 		{
-			DrawString(32, 180, "GAME OVER");
+			DrawString(32, 180, "\tGAME OVER\nPress r to restart");
+
+			if (GetKey(olc::Key::R).bPressed)
+			{
+				OnUserCreate();
+			}
 		}
 
 		void NewPiece()
@@ -511,11 +506,11 @@ class Tetris : public olc::PixelGameEngine
 
 			Also can be used when restarting the game
 		*/
-		void ClearBoard(int x, int y, int width, int height)
+		void ClearBoard()
 		{
-			for (int row = y; row < y + height; row++)
+			for (int row = 0; row < ROW_LENGTH; row++)
 			{
-				for (int col = x; col < x + width; col++)
+				for (int col = 0; col < COL_LENGTH; col++)
 				{
 					board[row][col] = BACKGROUND_COLOR;
 				}
