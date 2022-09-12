@@ -5,7 +5,7 @@
 
 /*
 	Problems:
-		1: Need more random pieces as currently the same seed is used for rand().
+		None currently
 */
 
 const olc::Pixel BACKGROUND_COLOR = olc::BLUE;
@@ -225,6 +225,8 @@ class Tetris : public olc::PixelGameEngine
 
 		bool OnUserCreate() override
 		{
+			srand(unsigned int(time(0)));
+
 			currentStatus = GameStatus::RUNNING;
 			timer_move_left = move_cd;
 			timer_fall_left = fall_cd;
